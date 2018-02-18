@@ -1407,10 +1407,6 @@ QByteArray ScriptableProxy::screenshot(const QString &format, const QString &scr
 {
     INVOKE(screenshot, (format, screenName, select));
 
-#if QT_VERSION < 0x050000
-    auto pixmap = QPixmap::grabWindow(QApplication::desktop()->winId());
-    const auto geometry = QApplication::desktop()->geometry();
-#else
     QScreen *selectedScreen = nullptr;
     if ( screenName.isEmpty() ) {
         const auto mousePosition = QCursor::pos();
@@ -1435,7 +1431,6 @@ QByteArray ScriptableProxy::screenshot(const QString &format, const QString &scr
     auto pixmap = selectedScreen->grabWindow(0);
 
     const auto geometry = selectedScreen->geometry();
-#endif
 
     if (select) {
         ScreenshotRectWidget rectWidget(pixmap);
@@ -1449,13 +1444,9 @@ QByteArray ScriptableProxy::screenshot(const QString &format, const QString &scr
             QCoreApplication::processEvents();
         const auto rect = rectWidget.selectionRect;
         if ( rect.isValid() ) {
-#if QT_VERSION < 0x050000
-            pixmap = pixmap.copy(rect);
-#else
             const auto ratio = pixmap.devicePixelRatio();
             const QRect rect2( rect.topLeft() * ratio, rect.size() * ratio );
             pixmap = pixmap.copy(rect2);
-#endif
         }
     }
 
@@ -1472,9 +1463,6 @@ QByteArray ScriptableProxy::screenshot(const QString &format, const QString &scr
 
 QStringList ScriptableProxy::screenNames()
 {
-#if QT_VERSION < 0x050000
-    return QStringList();
-#else
     INVOKE(screenNames, ());
 
     QStringList result;
@@ -1485,7 +1473,6 @@ QStringList ScriptableProxy::screenNames()
         result.append(screen->name());
 
     return result;
-#endif
 }
 
 Qt::KeyboardModifiers ScriptableProxy::queryKeyboardModifiers()
